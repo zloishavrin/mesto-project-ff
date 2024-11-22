@@ -1,7 +1,7 @@
 import '../pages/index.css';
 import initialCards from './cards';
 import { createCard } from './card';
-import { openModal, openModalWithImage, closeModal } from './modal';
+import { openModal, openModalWithImage, openModalWithForm } from './modal';
 
 // Темплейт карточки
 const cardTemplate = document.querySelector("#card-template");
@@ -40,18 +40,17 @@ for (const card of initialCards) {
   // Открытие модального окна просмотра карточки
   imageCard.addEventListener("click", () => openModalWithImage(modalViewCard, card));
   placesList.append(cardElement);
-};
+}
+
+// Редактирование профиля
+const editProfileFormHandler = () => {
+  profileName.textContent = nameInputProfileForm.value;
+  profileDescription.textContent = descriptionInputProfileForm.value;
+}
 
 // Открытие модального окна редактирования профиля
 editProfileButton.addEventListener("click", () => {
   nameInputProfileForm.value = profileName.textContent;
   descriptionInputProfileForm.value = profileDescription.textContent;
-  openModal(modalEditProfile);
-});
-
-editProfileForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  profileName.textContent = nameInputProfileForm.value;
-  profileDescription.textContent = descriptionInputProfileForm.value;
-  closeModal(modalEditProfile);
+  openModalWithForm(modalEditProfile, editProfileForm, editProfileFormHandler);
 });
