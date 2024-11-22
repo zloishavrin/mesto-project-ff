@@ -1,17 +1,17 @@
 import "../pages/index.css";
 import initialCards from "./cards";
-import { createCard } from "./card";
-import { openModal, openModalWithImage, openModalWithForm } from "./modal";
+import { createCard } from "./components/card";
+import { openModalWithImage, openModalWithForm } from "./components/modal";
 
 // Темплейт карточки
 const cardTemplate = document.querySelector("#card-template");
 // Контейнер карточек
-const placesList = document.querySelector(".places__list");
+const listPlaces = document.querySelector(".places__list");
 
 // Кнопка добавления карточек
-const addCardButton = document.querySelector(".profile__add-button");
+const buttonAddCard = document.querySelector(".profile__add-button");
 // Кнопка редактирования профиля
-const editProfileButton = document.querySelector(".profile__edit-button");
+const buttonEditProfile = document.querySelector(".profile__edit-button");
 
 // Модальное окно добавления карточек
 const modalAddCard = document.querySelector(".popup_type_new-card");
@@ -21,42 +21,62 @@ const modalEditProfile = document.querySelector(".popup_type_edit");
 const modalViewCard = document.querySelector(".popup_type_image");
 
 // Форма редактирования профиля
-const editProfileForm = modalEditProfile.querySelector(
+const formEditProfile = modalEditProfile.querySelector(
   ".popup__content .popup__form"
 );
-const nameInputProfileForm = editProfileForm.querySelector("input[name=name]");
-const descriptionInputProfileForm = editProfileForm.querySelector(
+const inputNameProfileForm = formEditProfile.querySelector("input[name=name]");
+const inputDescriptionProfileForm = formEditProfile.querySelector(
   "input[name=description]"
 );
 
-// Элементы профиля
-const profileName = document.querySelector(".profile__title");
-const profileDescription = document.querySelector(".profile__description");
+// Форма добавления карточки
+const formAddCard = modalAddCard.querySelector(".popup__content .popup__form");
+const inputNameAddCardForm = formAddCard.querySelector(
+  "input[name=place-name]"
+);
+const inputLinkAddCardForm = formAddCard.querySelector("input[name=link]");
 
-// Открытие модального окна добавления карточки
-addCardButton.addEventListener("click", () => openModal(modalAddCard));
+// Элементы профиля
+const nameProfile = document.querySelector(".profile__title");
+const descriptionProfile = document.querySelector(".profile__description");
 
 // Вывод карточек на страницу
 for (const card of initialCards) {
-  const cardElement = createCard(card, cardTemplate);
-  const imageCard = cardElement.querySelector(".card__image");
-
-  // Открытие модального окна просмотра карточки
-  imageCard.addEventListener("click", () =>
+  const cardElement = createCard(card, cardTemplate, () =>
     openModalWithImage(modalViewCard, card)
   );
-  placesList.append(cardElement);
+  listPlaces.append(cardElement);
 }
 
 // Открытие модального окна редактирования профиля
-editProfileButton.addEventListener("click", () => {
-  nameInputProfileForm.value = profileName.textContent;
-  descriptionInputProfileForm.value = profileDescription.textContent;
-  openModalWithForm(modalEditProfile, editProfileForm, editProfileFormHandler);
+buttonEditProfile.addEventListener("click", () => {
+  inputNameProfileForm.value = nameProfile.textContent;
+  inputDescriptionProfileForm.value = descriptionProfile.textContent;
+  openModalWithForm(modalEditProfile, formEditProfile, formEditProfileHandler);
+});
+
+// Открытие модального окна добавления карточки
+buttonAddCard.addEventListener("click", () => {
+  inputNameAddCardForm.value = "";
+  inputLinkAddCardForm.value = "";
+  openModalWithForm(modalAddCard, formAddCard, formAddCardHandler);
 });
 
 // Редактирование профиля
-const editProfileFormHandler = () => {
-  profileName.textContent = nameInputProfileForm.value;
-  profileDescription.textContent = descriptionInputProfileForm.value;
-};
+const formEditProfileHandler = () => {
+  nameProfile.textContent = inputNameProfileForm.value;
+  descriptionProfile.textContent = inputDescriptionProfileForm.value;
+}
+
+// Добавление карточки
+const formAddCardHandler = () => {
+  const card = {
+    name: inputNameAddCardForm.value,
+    link: inputLinkAddCardForm.value,
+  };
+
+  const cardElement = createCard(card, cardTemplate, () =>
+    openModalWithImage(modalViewCard, card)
+  );
+  listPlaces.prepend(cardElement);
+}
