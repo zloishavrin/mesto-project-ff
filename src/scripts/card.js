@@ -2,7 +2,8 @@
 export const deleteCard = (cardElement) => cardElement.remove();
 
 // Функция лайка карточки
-export const likeCard = (likeButton) => likeButton.classList.toggle("card__like-button_is-active");
+export const likeCard = (likeButton) =>
+  likeButton.classList.toggle("card__like-button_is-active");
 
 // Функция создания карточки
 export const createCard = (card, cardTemplate) => {
