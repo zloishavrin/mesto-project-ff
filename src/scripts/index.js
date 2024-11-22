@@ -1,38 +1,57 @@
 import '../pages/index.css';
 import initialCards from './cards';
+import { createCard } from './card';
+import { openModal, openModalWithImage, closeModal } from './modal';
 
 // Темплейт карточки
 const cardTemplate = document.querySelector("#card-template");
-
-// DOM узлы
+// Контейнер карточек
 const placesList = document.querySelector(".places__list");
 
-// Функция удаления карточки
-const deleteCard = (cardElement) => cardElement.remove();
+// Кнопка добавления карточек
+const addCardButton= document.querySelector(".profile__add-button");
+// Кнопка редактирования профиля
+const editProfileButton = document.querySelector(".profile__edit-button");
 
-// Функция создания карточки
-const createCard = (card) => {
-  const { link: linkCard, name: nameCard } = card;
+// Модальное окно добавления карточек
+const modalAddCard = document.querySelector(".popup_type_new-card");
+// Модальное окно редактирования профиля
+const modalEditProfile = document.querySelector(".popup_type_edit");
+// Модальное окно просмотра карточки
+const modalViewCard = document.querySelector(".popup_type_image");
 
-  const element = cardTemplate.content
-    .querySelector(".places__item")
-    .cloneNode(true);
+// Форма редактирования профиля
+const editProfileForm = modalEditProfile.querySelector(".popup__content .popup__form");
+const nameInputProfileForm = editProfileForm.querySelector("input[name=name]");
+const descriptionInputProfileForm = editProfileForm.querySelector("input[name=description]");
 
-  const image = element.querySelector(".card__image");
-  const title = element.querySelector(".card__title");
-  const deleteButton = element.querySelector(".card__delete-button");
+// Элементы профиля
+const profileName = document.querySelector(".profile__title");
+const profileDescription = document.querySelector(".profile__description");
 
-  image.src = linkCard;
-  image.alt = nameCard;
-  title.textContent = nameCard;
+// Открытие модального окна добавления карточки
+addCardButton.addEventListener("click", () => openModal(modalAddCard));
 
-  deleteButton.addEventListener("click", () => deleteCard(element));
+// Вывод карточек на страницу
+for (const card of initialCards) {
+  const cardElement = createCard(card, cardTemplate);
+  const imageCard = cardElement.querySelector(".card__image");
 
-  return element;
+  // Открытие модального окна просмотра карточки
+  imageCard.addEventListener("click", () => openModalWithImage(modalViewCard, card));
+  placesList.append(cardElement);
 };
 
-// Вывести карточки на страницу
-for (const card of initialCards) {
-  const cardElement = createCard(card);
-  placesList.append(cardElement);
-}
+// Открытие модального окна редактирования профиля
+editProfileButton.addEventListener("click", () => {
+  nameInputProfileForm.value = profileName.textContent;
+  descriptionInputProfileForm.value = profileDescription.textContent;
+  openModal(modalEditProfile);
+});
+
+editProfileForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  profileName.textContent = nameInputProfileForm.value;
+  profileDescription.textContent = descriptionInputProfileForm.value;
+  closeModal(modalEditProfile);
+});
