@@ -1,7 +1,7 @@
 import "../pages/index.css";
 import initialCards from "./cards";
 import { createCard } from "./components/card";
-import { openModalWithImage, openModalWithForm } from "./components/modal";
+import { openModal, closeModal } from "./components/modal";
 
 // Темплейт карточки
 const cardTemplate = document.querySelector("#card-template");
@@ -52,24 +52,19 @@ for (const card of initialCards) {
 buttonEditProfile.addEventListener("click", () => {
   inputNameProfileForm.value = nameProfile.textContent;
   inputDescriptionProfileForm.value = descriptionProfile.textContent;
-  openModalWithForm(modalEditProfile, formEditProfile, formEditProfileHandler);
+  openModal(modalEditProfile);
 });
 
 // Открытие модального окна добавления карточки
 buttonAddCard.addEventListener("click", () => {
   inputNameAddCardForm.value = "";
   inputLinkAddCardForm.value = "";
-  openModalWithForm(modalAddCard, formAddCard, formAddCardHandler);
+  openModal(modalAddCard);
 });
 
-// Редактирование профиля
-const formEditProfileHandler = () => {
-  nameProfile.textContent = inputNameProfileForm.value;
-  descriptionProfile.textContent = inputDescriptionProfileForm.value;
-}
-
 // Добавление карточки
-const formAddCardHandler = () => {
+formAddCard.addEventListener("submit", (event) => {
+  event.preventDefault();
   const card = {
     name: inputNameAddCardForm.value,
     link: inputLinkAddCardForm.value,
@@ -79,4 +74,29 @@ const formAddCardHandler = () => {
     openModalWithImage(modalViewCard, card)
   );
   listPlaces.prepend(cardElement);
+  closeModal(modalAddCard);
+});
+
+// Изменение профиля
+formEditProfile.addEventListener("submit", (event) => {
+  event.preventDefault();
+  nameProfile.textContent = inputNameProfileForm.value;
+  descriptionProfile.textContent = inputDescriptionProfileForm.value;
+  closeModal(modalEditProfile);
+});
+
+// Открытие модального окна с изображением
+// Оставляю эту функцию, чтобы не дублировать код
+const openModalWithImage = (modalElement, card) => {
+  const imageModal = modalElement.querySelector(
+    ".popup__content .popup__image"
+  );
+  const captionModal = modalElement.querySelector(
+    ".popup__content .popup__caption"
+  );
+
+  imageModal.src = card.link;
+  captionModal.textContent = card.name;
+
+  openModal(modalElement);
 }
