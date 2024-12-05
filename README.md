@@ -1,3 +1,1 @@
-# Проектная работа Mesto
-
-https://github.com/zloishavrin/mesto-project-ff
+https://zloishavrin.github.io/mesto-project-ff/

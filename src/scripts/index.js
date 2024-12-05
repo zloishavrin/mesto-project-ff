@@ -1,7 +1,18 @@
 import "../pages/index.css";
-import initialCards from "./cards";
 import { createCard } from "./components/card";
 import { openModal, closeModal } from "./components/modal";
+import { enableValidation, clearValidation } from "./utils/validation";
+import * as API from "./utils/api";
+
+// Включение валидации всех форм
+const validationConfig = {
+  inputSelector: '.popup__input',
+  buttonSelector: '.popup__button',
+  errorSelector: '.popup__input-error',
+  inputClassWithError: 'popup__input_type_error',
+  errorClassHidden: 'popup__input-error-is-hidden'
+}
+enableValidation(validationConfig);
 
 // Темплейт карточки
 const cardTemplate = document.querySelector("#card-template");
@@ -17,6 +28,8 @@ const buttonEditProfile = document.querySelector(".profile__edit-button");
 const modalAddCard = document.querySelector(".popup_type_new-card");
 // Модальное окно редактирования профиля
 const modalEditProfile = document.querySelector(".popup_type_edit");
+// Модальное окно редактирования аватара
+const modalEditAvatar = document.querySelector(".popup_type_avatar");
 // Модальное окно просмотра карточки
 const modalViewCard = document.querySelector(".popup_type_image");
 
@@ -29,6 +42,14 @@ const inputDescriptionProfileForm = formEditProfile.querySelector(
   "input[name=description]"
 );
 
+// Форма редактирования аватара
+const formEditAvatar = modalEditAvatar.querySelector(
+  ".popup__content .popup__form"
+);
+const inputLinkEditAvatarForm = formEditAvatar.querySelector(
+  "input[name=link]"
+);
+
 // Форма добавления карточки
 const formAddCard = modalAddCard.querySelector(".popup__content .popup__form");
 const inputNameAddCardForm = formAddCard.querySelector(
@@ -37,28 +58,52 @@ const inputNameAddCardForm = formAddCard.querySelector(
 const inputLinkAddCardForm = formAddCard.querySelector("input[name=link]");
 
 // Элементы профиля
+const imageProfile = document.querySelector(".profile__image");
 const nameProfile = document.querySelector(".profile__title");
 const descriptionProfile = document.querySelector(".profile__description");
 
-// Вывод карточек на страницу
-for (const card of initialCards) {
-  const cardElement = createCard(card, cardTemplate, () =>
-    openModalWithImage(modalViewCard, card)
-  );
-  listPlaces.append(cardElement);
-}
+// Идентификатор пользователя
+let userId;
+
+// Загрузка данных страницы (профиль и карточки)
+Promise.all([API.getUser(), API.getCards()])
+  .then(([user, cards]) => {
+    userId = user._id;
+    nameProfile.textContent = user.name;
+    descriptionProfile.textContent = user.about;
+    imageProfile.style.backgroundImage = `url(${user.avatar})`;
+
+    for(const card of cards) {
+      const cardElement = createCard(card, cardTemplate, userId, () =>
+        openModalWithImage(modalViewCard, card)
+      );
+      listPlaces.append(cardElement);
+    }
+  })
+  .catch((error) => {
+    console.error(error);
+  });
 
 // Открытие модального окна редактирования профиля
 buttonEditProfile.addEventListener("click", () => {
   inputNameProfileForm.value = nameProfile.textContent;
   inputDescriptionProfileForm.value = descriptionProfile.textContent;
+  clearValidation(formEditProfile, validationConfig);
   openModal(modalEditProfile);
+});
+
+// Открытие модального окна редактирования аватара
+imageProfile.addEventListener("click", () => {
+  inputLinkEditAvatarForm.value = "";
+  clearValidation(formEditAvatar, validationConfig);
+  openModal(modalEditAvatar);
 });
 
 // Открытие модального окна добавления карточки
 buttonAddCard.addEventListener("click", () => {
   inputNameAddCardForm.value = "";
   inputLinkAddCardForm.value = "";
+  clearValidation(formAddCard, validationConfig);
   openModal(modalAddCard);
 });
 
@@ -69,24 +114,53 @@ formAddCard.addEventListener("submit", (event) => {
     name: inputNameAddCardForm.value,
     link: inputLinkAddCardForm.value,
   };
+  activateButtonLoading(formAddCard.querySelector(".button"));
 
-  const cardElement = createCard(card, cardTemplate, () =>
-    openModalWithImage(modalViewCard, card)
-  );
-  listPlaces.prepend(cardElement);
-  closeModal(modalAddCard);
+  API.addCard(card)
+    .then((card) => {
+      const cardElement = createCard(card, cardTemplate, userId, () =>
+        openModalWithImage(modalViewCard, card)
+      );
+      listPlaces.prepend(cardElement);
+      closeModal(modalAddCard);
+      removeButtonLoading(formAddCard.querySelector(".button"));
+    })
+    .catch((error) => {
+      console.error(error);
+    });
 });
 
 // Изменение профиля
 formEditProfile.addEventListener("submit", (event) => {
   event.preventDefault();
-  nameProfile.textContent = inputNameProfileForm.value;
-  descriptionProfile.textContent = inputDescriptionProfileForm.value;
-  closeModal(modalEditProfile);
+  activateButtonLoading(formAddCard.querySelector(".button"));
+  API.editProfile(inputNameProfileForm.value, inputDescriptionProfileForm.value)
+    .then((profile) => {
+      nameProfile.textContent = profile.name;
+      descriptionProfile.textContent = profile.about;
+      closeModal(modalEditProfile);
+      removeButtonLoading(formAddCard.querySelector(".button"));
+    })
+    .catch((error) => {
+      console.error(error);
+    });
+});
+
+formEditAvatar.addEventListener("submit", (event) => {
+  event.preventDefault();
+  activateButtonLoading(formAddCard.querySelector(".button"));
+  API.editProfileImage(inputLinkEditAvatarForm.value)
+    .then((profile) => {
+      imageProfile.style.backgroundImage = `url(${profile.avatar})`;
+      closeModal(modalEditAvatar);
+      removeButtonLoading(formAddCard.querySelector(".button"));
+    })
+    .catch((error) => {
+      console.error(error);
+    });
 });
 
 // Открытие модального окна с изображением
-// Оставляю эту функцию, чтобы не дублировать код
 const openModalWithImage = (modalElement, card) => {
   const imageModal = modalElement.querySelector(
     ".popup__content .popup__image"
@@ -99,4 +173,12 @@ const openModalWithImage = (modalElement, card) => {
   captionModal.textContent = card.name;
 
   openModal(modalElement);
+};
+
+const activateButtonLoading = (buttonElement) => {
+  buttonElement.textContent = `${buttonElement.textContent}...`;
+};
+
+const removeButtonLoading = (buttonElement) => {
+  buttonElement.textContent = buttonElement.textContent.slice(0, -3);
 }
