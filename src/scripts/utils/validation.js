@@ -9,14 +9,11 @@ export const enableValidation = (validationConfig) => {
 export const clearValidation = (formElement, validationConfig) => {
   const inputElements = Array.from(formElement.querySelectorAll(validationConfig.inputSelector));
   const buttonElement = formElement.querySelector(validationConfig.buttonSelector);
-  const errorElements = Array.from(formElement.querySelectorAll(validationConfig.errorSelector));
 
   for(const inputElement of inputElements) {
-    inputElement.classList.remove(validationConfig.inputClassWithError);
+    hideInputError(formElement, inputElement, validationConfig);
   }
-  for(const errorElement of errorElements) {
-    errorElement.classList.add(validationConfig.errorClassHidden);
-  }
+
   buttonElement.disabled = true;
 }
 
@@ -26,12 +23,13 @@ const setValidationListeners = (formElement, validationConfig) => {
 
   for(const inputElement of inputElements) {
     inputElement.addEventListener('input', () => {
-      isValid(formElement, inputElement, buttonElement, validationConfig);
+      isInputValid(formElement, inputElement, validationConfig);
+      isFormValid(formElement, buttonElement, inputElements);
     });
   }
 }
 
-const isValid = (formElement, inputElement, buttonElement, validationConfig) => {
+const isInputValid = (formElement, inputElement, validationConfig) => {
   if(inputElement.validity.patternMismatch && inputElement.dataset.validationError) {
     inputElement.setCustomValidity(inputElement.dataset.validationError);
   }
@@ -41,12 +39,23 @@ const isValid = (formElement, inputElement, buttonElement, validationConfig) => 
 
   if(!inputElement.validity.valid) {
     showInputError(formElement, inputElement, inputElement.validationMessage, validationConfig);
-    buttonElement.disabled = true;
   }
   else {
     hideInputError(formElement, inputElement, validationConfig);
-    buttonElement.disabled = false;
   }
+}
+
+const isFormValid = (formElement, buttonElement, inputElements) => {
+  let formIsValid = true;
+
+  for (const inputElement of inputElements) {
+    if (!inputElement.validity.valid) {
+      formIsValid = false;
+      break;
+    }
+  }
+
+  buttonElement.disabled = !formIsValid;
 }
 
 const showInputError = (formElement, inputElement, errorMessage, validationConfig) => {

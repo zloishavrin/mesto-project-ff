@@ -49,7 +49,7 @@ export const createCard = (card, cardTemplate, profileId, handlerImage) => {
 }
 
 // Функция удаления карточки
-export const deleteCard = (cardElement, cardId) =>  {
+const deleteCard = (cardElement, cardId) =>  {
   API.deleteCard(cardId)
     .then(() => {
       cardElement.remove();
@@ -60,7 +60,7 @@ export const deleteCard = (cardElement, cardId) =>  {
 }
 
 // Функция лайка карточки
-export const likeCard = (buttonLike, likeCount, cardId) => {
+const likeCard = (buttonLike, likeCount, cardId) => {
   API.addLikeCard(cardId)
     .then((updatedCard) => {
       likeCount.textContent = updatedCard.likes.length;
@@ -72,7 +72,7 @@ export const likeCard = (buttonLike, likeCount, cardId) => {
 }
 
 // Функция снятия лайка с карточки
-export const removeLikeCard = (buttonLike, likeCount, cardId) => {
+const removeLikeCard = (buttonLike, likeCount, cardId) => {
   API.removeLikeCard(cardId)
     .then((updatedCard) => {
       likeCount.textContent = updatedCard.likes.length;

@@ -123,40 +123,46 @@ formAddCard.addEventListener("submit", (event) => {
       );
       listPlaces.prepend(cardElement);
       closeModal(modalAddCard);
-      removeButtonLoading(formAddCard.querySelector(".button"));
     })
     .catch((error) => {
       console.error(error);
+    })
+    .finally(() => {
+      removeButtonLoading(formAddCard.querySelector(".button"));
     });
 });
 
 // Изменение профиля
 formEditProfile.addEventListener("submit", (event) => {
   event.preventDefault();
-  activateButtonLoading(formAddCard.querySelector(".button"));
+  activateButtonLoading(formEditProfile.querySelector(".button"));
   API.editProfile(inputNameProfileForm.value, inputDescriptionProfileForm.value)
     .then((profile) => {
       nameProfile.textContent = profile.name;
       descriptionProfile.textContent = profile.about;
       closeModal(modalEditProfile);
-      removeButtonLoading(formAddCard.querySelector(".button"));
     })
     .catch((error) => {
       console.error(error);
+    })
+    .finally(() => {
+      removeButtonLoading(formEditProfile.querySelector(".button"));
     });
 });
 
 formEditAvatar.addEventListener("submit", (event) => {
   event.preventDefault();
-  activateButtonLoading(formAddCard.querySelector(".button"));
+  activateButtonLoading(formEditAvatar.querySelector(".button"));
   API.editProfileImage(inputLinkEditAvatarForm.value)
     .then((profile) => {
       imageProfile.style.backgroundImage = `url(${profile.avatar})`;
       closeModal(modalEditAvatar);
-      removeButtonLoading(formAddCard.querySelector(".button"));
     })
     .catch((error) => {
       console.error(error);
+    })
+    .finally(() => {
+      removeButtonLoading(formEditAvatar.querySelector(".button"));
     });
 });
 
